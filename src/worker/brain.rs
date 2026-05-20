@@ -339,15 +339,16 @@ pub fn doc_insert(
     content: Option<&str>,
     counterpart_name: Option<&str>,
     expires_at: Option<&str>,
+    file_url: Option<&str>,
 ) -> Result<String> {
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
         r#"INSERT INTO ws_documents
            (id, user_id, title, type, status, content, counterpart_name,
-            expires_at, tags, metadata, created_at, updated_at)
-           VALUES (?1,?2,?3,?4,'draft',?5,?6,?7,'[]','{}',?8,?8)"#,
-        params![id, user_id, title, doc_type, content, counterpart_name, expires_at, now],
+            expires_at, file_url, tags, metadata, created_at, updated_at)
+           VALUES (?1,?2,?3,?4,'draft',?5,?6,?7,?8,'[]','{}',?9,?9)"#,
+        params![id, user_id, title, doc_type, content, counterpart_name, expires_at, file_url, now],
     )?;
     Ok(id)
 }

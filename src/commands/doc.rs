@@ -1,8 +1,10 @@
+use std::path::PathBuf;
+
 use anyhow::Result;
 use clap::Subcommand;
 use console::style;
 
-use crate::worker::brain;
+use crate::worker::{brain, storage};
 
 #[derive(Subcommand)]
 pub enum DocCmd {
@@ -22,6 +24,9 @@ pub enum DocCmd {
         /// 내용 (짧은 텍스트)
         #[arg(long)]
         content: Option<String>,
+        /// 업로드할 파일 경로
+        #[arg(long)]
+        file: Option<PathBuf>,
     },
     /// 문서 목록
     List,
@@ -29,12 +34,24 @@ pub enum DocCmd {
 
 pub fn run(cmd: DocCmd) -> Result<()> {
     match cmd {
-        DocCmd::Add { title, r#type, with, expires, content } => {
+        DocCmd::Add { title, r#type, with, expires, content, file } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
+
+            let file_url = if let Some(ref path) = file {
+                let cfg = storage::load_config()?;
+                let doc_id = brain::uuid_like();
+                let url = storage::upload(&cfg, &user_id, &doc_id, path)?;
+                println!("{} 파일 업로드 완료", style("↑").cyan());
+                Some(url)
+            } else {
+                None
+            };
+
             let id = brain::doc_insert(
                 &conn, &user_id, &title, &r#type,
                 content.as_deref(), with.as_deref(), expires.as_deref(),
+                file_url.as_deref(),
             )?;
             println!("{} {} ({})", style("✓").green(), style(&title).bold(), style(&id).dim());
             Ok(())
