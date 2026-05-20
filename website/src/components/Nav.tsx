@@ -11,12 +11,10 @@ const NAV_ITEMS = [
 ]
 
 const ECOSYSTEM = [
-  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.webchemist.net' },
-  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.webchemist.net' },
-  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.webchemist.net' },
+  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.webchemist.net', current: false },
+  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.webchemist.net', current: true },
+  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.webchemist.net', current: false },
 ]
-
-const OTHERS = ECOSYSTEM.filter(e => e.id !== 'O')
 
 export const Nav: React.FC = () => {
   const [scrolled, setScrolled] = useState(false)
@@ -67,17 +65,27 @@ export const Nav: React.FC = () => {
 
           <div className="w-px h-4 bg-zinc-700/60 mx-1 hidden md:block" />
 
-          <div className="hidden md:flex items-center gap-1.5 ml-0.5">
-            {OTHERS.map(e => (
-              <a
-                key={e.id}
-                href={e.url}
-                title={e.name}
-                className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300"
-                style={{ background: `${e.color}22`, border: `1px solid ${e.color}44` }}
-              >
-                <span className="text-[9px] font-bold" style={{ color: e.color }}>{e.id}</span>
-              </a>
+          <div className="hidden md:flex items-center gap-0.5">
+            {ECOSYSTEM.map(e => (
+              e.current ? (
+                <span
+                  key={e.id}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                  style={{ background: `${e.color}18`, color: e.color }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: e.color }} />
+                  {e.name}
+                </span>
+              ) : (
+                <a
+                  key={e.id}
+                  href={e.url}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all duration-200"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: e.color }} />
+                  {e.name}
+                </a>
+              )
             ))}
           </div>
 
@@ -105,17 +113,31 @@ export const Nav: React.FC = () => {
               {item.label}
             </a>
           ))}
-          <div className="reveal flex items-center gap-3 mt-6" style={{ animationDelay: `${NAV_ITEMS.length * 60}ms` } as React.CSSProperties}>
-            {OTHERS.map(e => (
-              <a
-                key={e.id}
-                href={e.url}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
-                style={{ background: `${e.color}15`, border: `1px solid ${e.color}33`, color: e.color }}
-                onClick={() => setMenuOpen(false)}
-              >
-                {e.name}
-              </a>
+          <div className="reveal flex flex-col items-center gap-2 mt-6 w-full max-w-xs" style={{ animationDelay: `${NAV_ITEMS.length * 60}ms` } as React.CSSProperties}>
+            <p className="text-[11px] text-zinc-600 uppercase tracking-[0.15em] font-medium mb-1">Asurada System</p>
+            {ECOSYSTEM.map(e => (
+              e.current ? (
+                <span
+                  key={e.id}
+                  className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-semibold"
+                  style={{ background: `${e.color}18`, border: `1px solid ${e.color}33`, color: e.color }}
+                >
+                  <span className="w-2 h-2 rounded-full" style={{ background: e.color }} />
+                  {e.name}
+                  <span className="ml-auto text-[10px] opacity-60">현재</span>
+                </span>
+              ) : (
+                <a
+                  key={e.id}
+                  href={e.url}
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-all duration-200"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="w-2 h-2 rounded-full" style={{ background: e.color }} />
+                  {e.name}
+                </a>
+              )
             ))}
           </div>
         </div>
