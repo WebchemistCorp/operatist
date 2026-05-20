@@ -85,10 +85,13 @@ fn create_storage_bucket() -> Result<()> {
         Some(v) => v.to_string(),
         None => return Ok(()),
     };
-    let key = match sb.get("anon_key").and_then(|v| v.as_str()) {
-        Some(v) => v.to_string(),
-        None => return Ok(()),
-    };
+    // service_role_key 우선, 없으면 anon_key (버킷 생성은 service_role 필요)
+    let key = sb
+        .get("service_role_key")
+        .or_else(|| sb.get("anon_key"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .unwrap_or_default();
     let bucket = sb
         .get("storage_bucket")
         .and_then(|v| v.as_str())
@@ -97,6 +100,7 @@ fn create_storage_bucket() -> Result<()> {
 
     let body = format!(r#"{{"id":"{bucket}","name":"{bucket}","public":false}}"#);
     let resp = ureq::post(&format!("{}/storage/v1/bucket", url))
+        .header("apikey", &key)
         .header("Authorization", format!("Bearer {}", key))
         .header("Content-Type", "application/json")
         .send(body.as_bytes());

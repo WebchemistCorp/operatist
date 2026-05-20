@@ -4,7 +4,7 @@ use console::style;
 
 #[derive(Subcommand)]
 pub enum ConfigCmd {
-    /// 설정 값 저장 (키: database-url | storage-bucket | anon-key | url)
+    /// 설정 값 저장 (키: database-url | storage-bucket | anon-key | service-role-key | url)
     Set {
         key: String,
         value: String,
@@ -17,11 +17,12 @@ pub fn run(cmd: ConfigCmd) -> Result<()> {
     match cmd {
         ConfigCmd::Set { key, value } => {
             let toml_key = match key.as_str() {
-                "database-url"   => "database_url",
-                "storage-bucket" => "storage_bucket",
-                "anon-key"       => "anon_key",
-                "url"            => "url",
-                other => bail!("알 수 없는 키: {other}\n유효한 키: database-url | storage-bucket | anon-key | url"),
+                "database-url"     => "database_url",
+                "storage-bucket"   => "storage_bucket",
+                "anon-key"         => "anon_key",
+                "service-role-key" => "service_role_key",
+                "url"              => "url",
+                other => bail!("알 수 없는 키: {other}\n유효한 키: database-url | storage-bucket | anon-key | service-role-key | url"),
             };
             save_supabase_key(toml_key, &value)?;
             println!("{} [supabase].{toml_key} 저장 완료", style("✓").green());
@@ -36,7 +37,7 @@ pub fn run(cmd: ConfigCmd) -> Result<()> {
             println!("{}", style("~/.asurada/config.toml [supabase]").bold());
             if let Some(sb) = doc.get("supabase") {
                 for (k, v) in sb.as_table().into_iter().flatten() {
-                    let display = if k == "anon_key" || k == "database_url" {
+                    let display = if k == "anon_key" || k == "database_url" || k == "service_role_key" {
                         mask(v.as_str().unwrap_or(""))
                     } else {
                         v.as_str().unwrap_or("").to_string()
