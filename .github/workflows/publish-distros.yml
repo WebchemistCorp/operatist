@@ -1,0 +1,63 @@
+name: Re-publish Distros (retry)
+
+# Manually re-trigger release.yml's publish jobs (crates.io + Homebrew)
+# for an existing tag. Use when:
+#   - The tag-push run already shipped binaries + GitHub Release, but
+#     the distro publish jobs failed (e.g. crates.io 429 cooldown) or
+#     were not approved at the time.
+#   - You want to ship an older tag's distro artifacts later.
+#
+# The same approval gate applies — re-running release.yml hits the
+# `environment: production` requirement, so you'll need to click
+# Approve in the resulting workflow run UI before crates.io / Homebrew
+# jobs actually execute.
+#
+# Defaults to the most recent tag; override via the tag input.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to re-publish (default: latest existing tag)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  trigger:
+    name: Re-publish ${{ inputs.tag || 'latest tag' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag
+        id: resolve
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          fi
+          if [ -z "$TAG" ]; then
+            echo "::error::No tag specified and no existing tag found"
+            exit 1
+          fi
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG does not exist"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Re-publishing: $TAG"
+
+      - name: Trigger release.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release.yml -f tag=${{ steps.resolve.outputs.tag }}
+          echo "::notice::Triggered release.yml for ${{ steps.resolve.outputs.tag }} — approve the publish jobs in the run UI to actually push."
+          echo "Watch: https://github.com/${{ github.repository }}/actions/workflows/release.yml"

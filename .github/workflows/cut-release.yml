@@ -1,0 +1,91 @@
+name: Cut Release
+
+# Manual workflow that wraps the entire release flow:
+#   1. Bump Cargo.toml + Cargo.lock on develop with the requested version
+#   2. Commit + push develop
+#   3. Squash-merge develop into main (always taking develop's content)
+#   4. Tag v{version} and push — this triggers release.yml which builds
+#      binaries, publishes to crates.io, updates the Homebrew tap.
+#
+# CHANGELOG.md is the user's responsibility — add the version section
+# on develop before triggering this workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (no v prefix), e.g. 0.26.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  cut:
+    name: Cut v${{ inputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: develop
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Verify tag does not exist
+        run: |
+          if git rev-parse "v${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "::error::Tag v${{ inputs.version }} already exists"
+            exit 1
+          fi
+
+      - name: Verify version is newer than current
+        run: |
+          CUR=$(grep '^version' Cargo.toml | head -n1 | cut -d'"' -f2)
+          if [ "$CUR" = "${{ inputs.version }}" ]; then
+            echo "::error::Cargo.toml is already at v${{ inputs.version }} — bump to a new version"
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Bump Cargo.toml + refresh Cargo.lock
+        run: |
+          sed -i 's/^version = ".*"/version = "${{ inputs.version }}"/' Cargo.toml
+          # cargo metadata is the cheapest way to make Cargo regenerate
+          # the lockfile entry for our crate at the new version.
+          cargo metadata --format-version 1 >/dev/null
+
+      - name: Commit version bump on develop
+        run: |
+          git add Cargo.toml Cargo.lock
+          git commit -m "release: v${{ inputs.version }}"
+          git push origin develop
+
+      - name: Squash-merge develop into main
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          # --strategy-option=theirs means: on conflicts, take develop's
+          # version. Develop is the canonical source of truth; main only
+          # holds release squashes.
+          git merge --squash --strategy-option=theirs develop
+          git commit -m "release: v${{ inputs.version }}"
+          git push origin main
+
+      - name: Tag + push (triggers release.yml)
+        run: |
+          git tag "v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Summary
+        run: |
+          echo "✅ Tagged v${{ inputs.version }}, release.yml is now building."
+          echo "Watch progress: https://github.com/${{ github.repository }}/actions/workflows/release.yml"
