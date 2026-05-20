@@ -1,5 +1,5 @@
 import React from 'react'
-import { Terminal } from 'lucide-react'
+import { ArrowDown, Terminal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const PRIMARY = '#f97316'
@@ -50,13 +50,13 @@ export const Hero: React.FC = () => (
         </p>
 
         <div className="reveal flex items-center gap-3 flex-wrap justify-center" style={{ animationDelay: '250ms' }}>
-          <Button
-            disabled
-            className="flex items-center gap-2 rounded-full px-8 py-4 h-auto font-semibold text-sm text-zinc-950 cursor-not-allowed opacity-50"
-            style={{ background: PRIMARY }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-current" />
-            개발 중
+          <Button asChild className="group rounded-full px-8 py-4 h-auto font-semibold text-sm text-zinc-950 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500" style={{ background: PRIMARY, boxShadow: `0 0 30px ${PRIMARY}33` }}>
+            <a href="#about">
+              지금 시작하기
+              <span className="w-6 h-6 rounded-full flex items-center justify-center group-hover:translate-y-0.5 transition-transform bg-black/15">
+                <ArrowDown size={12} />
+              </span>
+            </a>
           </Button>
           <Button asChild variant="ghost" className="rounded-full px-6 py-4 h-auto border border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-orange-500/40 hover:bg-orange-500/5 transition-all duration-500">
             <a href="#about">더 알아보기</a>
