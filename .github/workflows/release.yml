@@ -122,7 +122,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     if: ${{ !contains(needs.release.outputs.tag, '-') }}
-    environment: production
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -157,7 +156,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     if: ${{ !contains(needs.release.outputs.tag, '-') }}
-    environment: production
     steps:
       - name: Checkout tap
         uses: actions/checkout@v4
