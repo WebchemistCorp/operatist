@@ -45,15 +45,14 @@ export const CTA: React.FC = () => (
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Button asChild className="rounded-full px-8 py-4 h-auto font-semibold text-zinc-950 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500" style={{ background: PRIMARY, boxShadow: `0 0 24px ${PRIMARY}33` }}>
-          <a href="https://github.com/WebchemistCorp/operatist/releases" target="_blank" rel="noreferrer">
-            GitHub Releases에서 다운로드
-            <ArrowRight size={14} />
-          </a>
-        </Button>
+        <div className="flex items-center gap-2 px-6 py-3 rounded-full border border-zinc-700/40 bg-zinc-800/30">
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: PRIMARY }} />
+          <span className="text-zinc-400 text-sm font-medium">개발 중 — 출시 예정</span>
+        </div>
         <Button asChild variant="ghost" className="rounded-full px-6 py-4 h-auto border border-zinc-700/60 text-zinc-400 hover:text-zinc-200 transition-all duration-500">
           <a href="https://github.com/WebchemistCorp/operatist" target="_blank" rel="noreferrer">
             소스코드 보기
+            <ArrowRight size={14} />
           </a>
         </Button>
       </div>

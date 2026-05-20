@@ -10,6 +10,14 @@ const NAV_ITEMS = [
   { label: '기능', href: '#features' },
 ]
 
+const ECOSYSTEM = [
+  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.webchemist.net' },
+  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.webchemist.net' },
+  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.webchemist.net' },
+]
+
+const OTHERS = ECOSYSTEM.filter(e => e.id !== 'O')
+
 export const Nav: React.FC = () => {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -57,12 +65,20 @@ export const Nav: React.FC = () => {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center ml-1 shrink-0">
-            <Button asChild size="xs" className="rounded-full font-semibold text-zinc-950" style={{ background: PRIMARY }}>
-              <a href="https://github.com/WebchemistCorp/operatist/releases" target="_blank" rel="noreferrer">
-                다운로드
+          <div className="w-px h-4 bg-zinc-700/60 mx-1 hidden md:block" />
+
+          <div className="hidden md:flex items-center gap-1.5 ml-0.5">
+            {OTHERS.map(e => (
+              <a
+                key={e.id}
+                href={e.url}
+                title={e.name}
+                className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300"
+                style={{ background: `${e.color}22`, border: `1px solid ${e.color}44` }}
+              >
+                <span className="text-[9px] font-bold" style={{ color: e.color }}>{e.id}</span>
               </a>
-            </Button>
+            ))}
           </div>
 
           <button
@@ -89,15 +105,19 @@ export const Nav: React.FC = () => {
               {item.label}
             </a>
           ))}
-          <a
-            href="https://github.com/WebchemistCorp/operatist/releases"
-            target="_blank"
-            rel="noreferrer"
-            style={{ animationDelay: `${NAV_ITEMS.length * 60}ms`, background: PRIMARY } as React.CSSProperties}
-            className="reveal mt-4 px-8 py-3 rounded-full text-zinc-950 font-semibold transition-all duration-300"
-          >
-            다운로드
-          </a>
+          <div className="reveal flex items-center gap-3 mt-6" style={{ animationDelay: `${NAV_ITEMS.length * 60}ms` } as React.CSSProperties}>
+            {OTHERS.map(e => (
+              <a
+                key={e.id}
+                href={e.url}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
+                style={{ background: `${e.color}15`, border: `1px solid ${e.color}33`, color: e.color }}
+                onClick={() => setMenuOpen(false)}
+              >
+                {e.name}
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </>
