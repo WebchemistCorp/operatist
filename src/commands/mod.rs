@@ -1,4 +1,5 @@
 pub mod asset;
+pub mod config;
 pub mod contact;
 pub mod doc;
 pub mod grant;

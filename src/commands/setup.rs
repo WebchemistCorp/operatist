@@ -51,38 +51,21 @@ pub fn run() -> Result<()> {
 }
 
 fn resolve_database_url() -> Result<String> {
-    // 1) 환경변수 우선
-    if let Ok(url) = std::env::var("ASURADA_DATABASE_URL") {
-        if !url.is_empty() {
-            return Ok(url);
-        }
-    }
+    let raw = std::fs::read_to_string(crate::paths::asurada_config()?)
+        .context("config.toml 읽기 실패 — asurada init 필요")?;
+    let doc: toml::Value = toml::from_str(&raw)?;
 
-    // 2) config.toml [supabase].database_url
-    if let Ok(raw) = std::fs::read_to_string(crate::paths::asurada_config()?) {
-        if let Ok(doc) = toml::from_str::<toml::Value>(&raw) {
-            if let Some(url) = doc
-                .get("supabase")
-                .and_then(|s| s.get("database_url"))
-                .and_then(|v| v.as_str())
-            {
-                return Ok(url.to_string());
-            }
-        }
-    }
-
-    bail!(
-        "데이터베이스 URL 을 찾을 수 없습니다.\n\
-         다음 중 하나를 설정하세요:\n\
-         \n\
-         A) 환경변수:\n\
-            export ASURADA_DATABASE_URL=\"postgresql://postgres.[ref]:[password]@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres\"\n\
-         \n\
-         B) ~/.asurada/config.toml [supabase] 섹션에 추가:\n\
-            database_url = \"postgresql://...\"\n\
-         \n\
-         Supabase 대시보드 → Project Settings → Database → Connection string (URI) 에서 복사"
-    )
+    doc.get("supabase")
+        .and_then(|s| s.get("database_url"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .ok_or_else(|| anyhow::anyhow!(
+            "database_url 이 설정되지 않았습니다.\n\
+             \n\
+             Supabase 대시보드 → Project Settings → Database → Connection string (URI) 복사 후:\n\
+             \n\
+             workspace config set database-url \"postgresql://postgres.[ref]:[pw]@...\""
+        ))
 }
 
 fn create_storage_bucket() -> Result<()> {

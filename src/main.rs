@@ -57,6 +57,11 @@ enum Commands {
     },
     /// Supabase 테이블/버킷 초기 설정 (최초 1회)
     Setup,
+    /// 설정 관리 (~/.asurada/config.toml)
+    Config {
+        #[command(subcommand)]
+        cmd: commands::config::ConfigCmd,
+    },
 }
 
 fn main() -> Result<()> {
@@ -71,5 +76,6 @@ fn main() -> Result<()> {
         Commands::Task { cmd }     => commands::task::run(cmd),
         Commands::Grant { cmd }    => commands::grant::run(cmd),
         Commands::Setup            => commands::setup::run(),
+        Commands::Config { cmd }   => commands::config::run(cmd),
     }
 }
