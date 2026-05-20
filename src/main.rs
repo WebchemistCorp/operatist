@@ -55,6 +55,8 @@ enum Commands {
         #[command(subcommand)]
         cmd: commands::grant::GrantCmd,
     },
+    /// Supabase 테이블/버킷 초기 설정 (최초 1회)
+    Setup,
 }
 
 fn main() -> Result<()> {
@@ -68,5 +70,6 @@ fn main() -> Result<()> {
         Commands::Schedule { cmd } => commands::schedule::run(cmd),
         Commands::Task { cmd }     => commands::task::run(cmd),
         Commands::Grant { cmd }    => commands::grant::run(cmd),
+        Commands::Setup            => commands::setup::run(),
     }
 }
