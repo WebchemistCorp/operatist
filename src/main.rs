@@ -6,10 +6,10 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "workspace")]
+#[command(name = "operatist")]
 #[command(
     version,
-    about = "Company operations CLI for Webchemist — powered by Asurada"
+    about = "Business operations CLI for Webchemist — powered by Asurada"
 )]
 struct Cli {
     #[command(subcommand)]

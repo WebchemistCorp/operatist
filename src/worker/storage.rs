@@ -31,7 +31,7 @@ pub fn load_config() -> Result<SupabaseConfig> {
     let bucket = sb
         .get("storage_bucket")
         .and_then(|v| v.as_str())
-        .unwrap_or("workspace-docs")
+        .unwrap_or("operatist-docs")
         .to_string();
     Ok(SupabaseConfig {
         url,

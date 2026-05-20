@@ -1,62 +1,57 @@
 import React from 'react'
-import {
-  Wallet,
-  FileText,
-  Calendar,
-  Gift,
-  Settings,
-  Users,
-} from 'lucide-react'
+import { BarChart2, BookOpen, Briefcase, Calendar, ClipboardList, DollarSign, FileText, Users } from 'lucide-react'
 
-const PRIMARY = '#2563eb'
-const ACCENT = '#10b981'
+const PRIMARY = '#f97316'
 
 interface FeatureProps {
   icon: React.ElementType
   title: string
   desc: string
   highlight?: boolean
-  color?: string
 }
 
 const FEATURES: FeatureProps[] = [
   {
-    icon: Wallet,
-    title: '자금관리',
-    desc: '매출·지출 자동 집계, 현금흐름 분석, 세무 보고서 생성까지. 숫자에 매달리는 시간을 없앱니다.',
+    icon: Briefcase,
+    title: '자산 관리',
+    desc: '노트북, 차량, 장비 등 회사 자산을 등록하고 상태를 추적합니다.',
     highlight: true,
-    color: PRIMARY,
+  },
+  {
+    icon: BarChart2,
+    title: '자금 관리',
+    desc: '수입·지출을 기록하고 월별 현금흐름을 한눈에 요약합니다.',
+    highlight: true,
   },
   {
     icon: FileText,
-    title: '문서관리',
-    desc: '계약서, 견적서, 사업계획서를 자연어 한 마디로 초안 작성. 법무 검토 포인트도 함께 짚어드립니다.',
-    highlight: true,
-    color: PRIMARY,
-  },
-  {
-    icon: Calendar,
-    title: '일정조율',
-    desc: '미팅 조율, 데드라인 관리, 거래처 팔로업 리마인더. 놓치는 일정이 없도록 대신 챙깁니다.',
-    color: ACCENT,
-  },
-  {
-    icon: Gift,
-    title: '지원사업 신청',
-    desc: '정부·지자체 지원사업을 자동 탐색하고, 자격 요건 분석부터 신청서 작성까지 원스톱 지원.',
-    color: ACCENT,
-  },
-  {
-    icon: Settings,
-    title: '운영 실무',
-    desc: '재고 관리, 직원 급여 계산, 4대보험 신고 준비 등 반복 운영 업무를 자동화합니다.',
-    color: PRIMARY,
+    title: '문서 관리',
+    desc: '계약서, 제안서, 보고서를 보관하고 파일을 안전하게 저장합니다.',
   },
   {
     icon: Users,
-    title: '거래처 관리',
-    desc: '거래처 히스토리, 미수금 현황, 소통 이력을 통합 관리. 중요한 관계를 놓치지 않습니다.',
-    color: ACCENT,
+    title: '거래처 / 연락처',
+    desc: '고객사, 파트너사, 프리랜서 등 사업 관계를 체계적으로 관리합니다.',
+  },
+  {
+    icon: ClipboardList,
+    title: '구독 관리',
+    desc: 'SaaS, 월정액 서비스의 결제일과 금액을 놓치지 않고 파악합니다.',
+  },
+  {
+    icon: Calendar,
+    title: '일정 관리',
+    desc: '미팅, 마감일, 납부일 등 사업 일정을 CLI에서 바로 조회합니다.',
+  },
+  {
+    icon: DollarSign,
+    title: '지원사업 신청',
+    desc: '정부 지원사업을 발굴하고 신청 단계별 진행 현황을 추적합니다.',
+  },
+  {
+    icon: BookOpen,
+    title: '태스크 관리',
+    desc: '운영 할일을 우선순위별로 정리하고 완료 현황을 파악합니다.',
   },
 ]
 
@@ -65,36 +60,34 @@ export const Features: React.FC = () => (
     <div className="max-w-6xl mx-auto space-y-16">
 
       <div className="text-center space-y-4">
-        <p className="text-sm uppercase tracking-[0.15em] font-medium" style={{ color: ACCENT }}>핵심 기능</p>
-        <h2 className="text-4xl md:text-5xl font-bold text-slate-50" style={{ wordBreak: 'keep-all' }}>
-          사업 전반을 커버하는
-          <br />
-          <span style={{ color: '#60a5fa' }}>6가지 핵심 기능</span>
+        <p className="text-sm uppercase tracking-[0.15em] font-medium" style={{ color: PRIMARY }}>Features</p>
+        <h2 className="text-4xl md:text-5xl font-bold text-zinc-50" style={{ wordBreak: 'keep-all' }}>
+          사업 운영의 전 영역을 커버
         </h2>
-        <p className="text-slate-400 text-lg max-w-xl mx-auto" style={{ wordBreak: 'keep-all' }}>
-          한 명이 다 해야 했던 일들을 Workspace가 나눠 처리합니다.
+        <p className="text-zinc-400 text-lg max-w-xl mx-auto" style={{ wordBreak: 'keep-all' }}>
+          하나의 CLI로 사업자가 관리해야 하는 모든 영역을 처리합니다.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {FEATURES.map(({ icon: Icon, title, desc, highlight, color = PRIMARY }) => (
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {FEATURES.map(({ icon: Icon, title, desc, highlight }) => (
           <div
             key={title}
-            className="rounded-2xl p-7 border space-y-4 transition-all duration-300 hover:scale-[1.01]"
+            className="rounded-2xl p-6 border space-y-4 transition-all duration-300 hover:scale-[1.01]"
             style={{
-              background: highlight ? `${color}0d` : 'rgba(255,255,255,0.02)',
-              borderColor: highlight ? `${color}33` : 'rgba(255,255,255,0.06)',
+              background: highlight ? `${PRIMARY}0d` : 'rgba(255,255,255,0.02)',
+              borderColor: highlight ? `${PRIMARY}33` : 'rgba(255,255,255,0.06)',
             }}
           >
             <span
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: highlight ? `${color}22` : 'rgba(255,255,255,0.05)' }}
+              style={{ background: highlight ? `${PRIMARY}22` : 'rgba(255,255,255,0.05)' }}
             >
-              <Icon size={18} style={{ color: highlight ? color : '#64748b' }} />
+              <Icon size={18} style={{ color: highlight ? PRIMARY : '#71717a' }} />
             </span>
             <div className="space-y-2">
-              <p className="font-semibold text-slate-100">{title}</p>
-              <p className="text-slate-500 text-sm leading-relaxed" style={{ wordBreak: 'keep-all' }}>{desc}</p>
+              <p className="font-semibold text-zinc-100 text-sm">{title}</p>
+              <p className="text-zinc-500 text-xs leading-relaxed" style={{ wordBreak: 'keep-all' }}>{desc}</p>
             </div>
           </div>
         ))}

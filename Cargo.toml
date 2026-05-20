@@ -1,12 +1,12 @@
 [package]
-name = "webchemist-workspace"
+name = "operatist"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
-description = "Company operations CLI for Webchemist — asset management, subscriptions, and business workflows powered by Asurada."
+description = "Business operations CLI for Webchemist — asset management, subscriptions, and business workflows powered by Asurada."
 license = "MIT"
-repository = "https://github.com/WebchemistCorp/workspace"
-homepage = "https://github.com/WebchemistCorp/workspace"
+repository = "https://github.com/WebchemistCorp/operatist"
+homepage = "https://github.com/WebchemistCorp/operatist"
 authors = ["GennYoon <yoonwonyoul@webchemist.net>"]
 
 [dependencies]
@@ -29,5 +29,5 @@ opt-level = "z"
 codegen-units = 1
 
 [[bin]]
-name = "workspace"
+name = "operatist"
 path = "src/main.rs"
