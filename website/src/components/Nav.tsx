@@ -11,9 +11,9 @@ const NAV_ITEMS = [
 ]
 
 const ECOSYSTEM = [
-  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.webchemist.net', current: false },
-  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.webchemist.net', current: true },
-  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.webchemist.net', current: false },
+  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.net', current: false },
+  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.net', current: true },
+  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.net', current: false },
 ]
 
 export const Nav: React.FC = () => {

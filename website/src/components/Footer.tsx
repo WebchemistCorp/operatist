@@ -1,9 +1,9 @@
 import React from 'react'
 
 const ECOSYSTEM = [
-  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.webchemist.net' },
-  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.webchemist.net' },
-  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.webchemist.net' },
+  { id: 'D', name: 'Devist', color: '#0ea5e9', url: 'https://devist.net' },
+  { id: 'O', name: 'Operatist', color: '#f97316', url: 'https://operatist.net' },
+  { id: 'C', name: 'Curatist', color: '#8b5cf6', url: 'https://curatist.net' },
 ]
 
 export const Footer: React.FC = () => (
