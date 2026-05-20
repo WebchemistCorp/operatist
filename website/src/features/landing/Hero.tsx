@@ -51,7 +51,7 @@ export const Hero: React.FC = () => (
 
         <div className="reveal flex items-center gap-3 flex-wrap justify-center" style={{ animationDelay: '250ms' }}>
           <Button asChild className="group rounded-full px-8 py-4 h-auto font-semibold text-sm text-zinc-950 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500" style={{ background: PRIMARY, boxShadow: `0 0 30px ${PRIMARY}33` }}>
-            <a href="#about">
+            <a href="#cta">
               지금 시작하기
               <span className="w-6 h-6 rounded-full flex items-center justify-center group-hover:translate-y-0.5 transition-transform bg-black/15">
                 <ArrowDown size={12} />
