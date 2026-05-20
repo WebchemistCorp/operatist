@@ -1261,6 +1261,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "webchemist-workspace"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "console",
+ "dirs",
+ "mime_guess",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "toml",
+ "ureq",
+]
+
+[[package]]
 name = "webpki-root-certs"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1595,23 +1612,6 @@ dependencies = [
  "serde_json",
  "unicode-xid",
  "wasmparser",
-]
-
-[[package]]
-name = "workspace"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "console",
- "dirs",
- "mime_guess",
- "rusqlite",
- "serde",
- "serde_json",
- "toml",
- "ureq",
 ]
 
 [[package]]

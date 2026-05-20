@@ -46,7 +46,10 @@ pub fn run() -> Result<()> {
     // Storage 버킷 생성 시도
     create_storage_bucket()?;
 
-    println!("{} workspace setup 완료 — `workspace doc add` 등 커맨드를 사용할 수 있습니다.", style("✓").green().bold());
+    println!(
+        "{} workspace setup 완료 — `workspace doc add` 등 커맨드를 사용할 수 있습니다.",
+        style("✓").green().bold()
+    );
     Ok(())
 }
 
@@ -59,13 +62,15 @@ fn resolve_database_url() -> Result<String> {
         .and_then(|s| s.get("database_url"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
-        .ok_or_else(|| anyhow::anyhow!(
-            "database_url 이 설정되지 않았습니다.\n\
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "database_url 이 설정되지 않았습니다.\n\
              \n\
              Supabase 대시보드 → Project Settings → Database → Connection string (URI) 복사 후:\n\
              \n\
              workspace config set database-url \"postgresql://postgres.[ref]:[pw]@...\""
-        ))
+            )
+        })
 }
 
 fn create_storage_bucket() -> Result<()> {

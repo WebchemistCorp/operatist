@@ -35,9 +35,15 @@ pub enum AssetCmd {
 
 pub fn run(cmd: AssetCmd) -> Result<()> {
     match cmd {
-        AssetCmd::Add { name, category, date, price, vendor, serial, notes } => {
-            add(name, category, date, price, vendor, serial, notes)
-        }
+        AssetCmd::Add {
+            name,
+            category,
+            date,
+            price,
+            vendor,
+            serial,
+            notes,
+        } => add(name, category, date, price, vendor, serial, notes),
         AssetCmd::List => list(),
     }
 }
@@ -55,12 +61,23 @@ fn add(
     let user_id = crate::paths::load_user_id()?;
 
     let id = brain::asset_insert(
-        &conn, &user_id, &name, &category,
-        date.as_deref(), price, "KRW",
-        vendor.as_deref(), serial.as_deref(), notes.as_deref(),
+        &conn,
+        &user_id,
+        &name,
+        &category,
+        date.as_deref(),
+        price,
+        "KRW",
+        vendor.as_deref(),
+        serial.as_deref(),
+        notes.as_deref(),
     )?;
 
-    println!("{} 자산 추가됨: {}", style("✓").green(), style(&name).bold());
+    println!(
+        "{} 자산 추가됨: {}",
+        style("✓").green(),
+        style(&name).bold()
+    );
     println!("  ID: {}", &id[..8.min(id.len())]);
     if let Some(p) = price {
         println!("  금액: {}원", format_amount(p));
@@ -77,15 +94,16 @@ fn list() -> Result<()> {
         println!("(등록된 자산 없음)");
         return Ok(());
     }
-    println!("{:<8}  {:<20}  {:<12}  {:<14}  {}",
-        "ID", "이름", "카테고리", "금액", "구매일");
+    println!("{:<8}  {:<20}  {:<12}  {:<14}  구매일", "ID", "이름", "카테고리", "금액");
     println!("{}", "─".repeat(72));
     for a in assets {
-        let price = a.purchase_price
+        let price = a
+            .purchase_price
             .map(|p| format!("{}원", format_amount(p)))
             .unwrap_or_else(|| "-".to_string());
         let date = a.purchase_date.as_deref().unwrap_or("-");
-        println!("{:<8}  {:<20}  {:<12}  {:<14}  {}",
+        println!(
+            "{:<8}  {:<20}  {:<12}  {:<14}  {}",
             &a.id[..8.min(a.id.len())],
             truncate(&a.name, 20),
             a.category,
@@ -100,13 +118,18 @@ fn format_amount(n: i64) -> String {
     let s = n.to_string();
     let mut result = String::new();
     for (i, c) in s.chars().rev().enumerate() {
-        if i > 0 && i % 3 == 0 { result.push(','); }
+        if i > 0 && i % 3 == 0 {
+            result.push(',');
+        }
         result.push(c);
     }
     result.chars().rev().collect()
 }
 
 fn truncate(s: &str, max: usize) -> String {
-    if s.chars().count() <= max { s.to_string() }
-    else { format!("{}…", s.chars().take(max - 1).collect::<String>()) }
+    if s.chars().count() <= max {
+        s.to_string()
+    } else {
+        format!("{}…", s.chars().take(max - 1).collect::<String>())
+    }
 }

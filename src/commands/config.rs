@@ -5,10 +5,7 @@ use console::style;
 #[derive(Subcommand)]
 pub enum ConfigCmd {
     /// 설정 값 저장 (키: database-url | storage-bucket | anon-key | service-role-key | url)
-    Set {
-        key: String,
-        value: String,
-    },
+    Set { key: String, value: String },
     /// 현재 설정 출력
     Show,
 }
@@ -37,11 +34,12 @@ pub fn run(cmd: ConfigCmd) -> Result<()> {
             println!("{}", style("~/.asurada/config.toml [supabase]").bold());
             if let Some(sb) = doc.get("supabase") {
                 for (k, v) in sb.as_table().into_iter().flatten() {
-                    let display = if k == "anon_key" || k == "database_url" || k == "service_role_key" {
-                        mask(v.as_str().unwrap_or(""))
-                    } else {
-                        v.as_str().unwrap_or("").to_string()
-                    };
+                    let display =
+                        if k == "anon_key" || k == "database_url" || k == "service_role_key" {
+                            mask(v.as_str().unwrap_or(""))
+                        } else {
+                            v.as_str().unwrap_or("").to_string()
+                        };
                     println!("  {:<20} = {}", style(k).cyan(), display);
                 }
             } else {
@@ -74,8 +72,7 @@ fn save_supabase_key(key: &str, value: &str) -> Result<()> {
         t.insert(key.to_string(), toml::Value::String(value.to_string()));
     }
 
-    let out = toml::to_string_pretty(&toml::Value::Table(doc))
-        .context("TOML 직렬화 실패")?;
+    let out = toml::to_string_pretty(&toml::Value::Table(doc)).context("TOML 직렬화 실패")?;
     std::fs::write(&path, out).with_context(|| format!("config 쓰기 실패: {}", path.display()))?;
     Ok(())
 }

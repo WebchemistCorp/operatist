@@ -46,15 +46,39 @@ pub enum GrantCmd {
 
 pub fn run(cmd: GrantCmd) -> Result<()> {
     match cmd {
-        GrantCmd::Add { name, agency, category, amount, deadline, url, notes } => {
+        GrantCmd::Add {
+            name,
+            agency,
+            category,
+            amount,
+            deadline,
+            url,
+            notes,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
             let id = brain::grant_insert(
-                &conn, &user_id, &name, &agency, &category,
-                amount, deadline.as_deref(), url.as_deref(), notes.as_deref(),
+                &conn,
+                &user_id,
+                &name,
+                &agency,
+                &category,
+                amount,
+                deadline.as_deref(),
+                url.as_deref(),
+                notes.as_deref(),
             )?;
-            let amount_str = amount.map(|a| format!(" / {}원", a as i64)).unwrap_or_default();
-            println!("{} {} — {}{} ({})", style("✓").green(), style(&name).bold(), agency, amount_str, style(&id).dim());
+            let amount_str = amount
+                .map(|a| format!(" / {}원", a as i64))
+                .unwrap_or_default();
+            println!(
+                "{} {} — {}{} ({})",
+                style("✓").green(),
+                style(&name).bold(),
+                agency,
+                amount_str,
+                style(&id).dim()
+            );
             Ok(())
         }
         GrantCmd::List { status } => {
@@ -65,25 +89,45 @@ pub fn run(cmd: GrantCmd) -> Result<()> {
                 println!("{}", style("등록된 지원사업이 없습니다.").dim());
                 return Ok(());
             }
-            println!("{:<36}  {:<12}  {:<16}  {:<12}  {}",
-                style("ID").bold(), style("상태").bold(), style("마감일").bold(),
-                style("기관").bold(), style("사업명").bold());
+            println!(
+                "{:<36}  {:<12}  {:<16}  {:<12}  {}",
+                style("ID").bold(),
+                style("상태").bold(),
+                style("마감일").bold(),
+                style("기관").bold(),
+                style("사업명").bold()
+            );
             println!("{}", "-".repeat(90));
             for g in grants {
-                let deadline = g.deadline_at.as_deref().and_then(|d| d.get(..10)).unwrap_or("-").to_string();
+                let deadline = g
+                    .deadline_at
+                    .as_deref()
+                    .and_then(|d| d.get(..10))
+                    .unwrap_or("-")
+                    .to_string();
                 let status_styled = match g.status.as_str() {
-                    "approved"   => style(g.status.clone()).green(),
-                    "submitted"  => style(g.status.clone()).cyan(),
-                    "preparing"  => style(g.status.clone()).yellow(),
+                    "approved" => style(g.status.clone()).green(),
+                    "submitted" => style(g.status.clone()).cyan(),
+                    "preparing" => style(g.status.clone()).yellow(),
                     "discovered" => style(g.status.clone()).dim(),
-                    _            => style(g.status.clone()).red(),
+                    _ => style(g.status.clone()).red(),
                 };
-                println!("{:<36}  {:<12}  {:<16}  {:<12}  {}", g.id, status_styled, deadline, g.agency, g.name);
+                println!(
+                    "{:<36}  {:<12}  {:<16}  {:<12}  {}",
+                    g.id, status_styled, deadline, g.agency, g.name
+                );
             }
             Ok(())
         }
         GrantCmd::Status { id, status } => {
-            let valid = ["discovered", "preparing", "submitted", "approved", "rejected", "cancelled"];
+            let valid = [
+                "discovered",
+                "preparing",
+                "submitted",
+                "approved",
+                "rejected",
+                "cancelled",
+            ];
             if !valid.contains(&status.as_str()) {
                 anyhow::bail!("유효한 상태: {}", valid.join(" | "));
             }

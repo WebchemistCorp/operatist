@@ -7,7 +7,10 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "workspace")]
-#[command(version, about = "Company operations CLI for Webchemist — powered by Asurada")]
+#[command(
+    version,
+    about = "Company operations CLI for Webchemist — powered by Asurada"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -67,15 +70,15 @@ enum Commands {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Asset { cmd }    => commands::asset::run(cmd),
-        Commands::Sub { cmd }      => commands::subscription::run(cmd),
-        Commands::Contact { cmd }  => commands::contact::run(cmd),
-        Commands::Tx { cmd }       => commands::tx::run(cmd),
-        Commands::Doc { cmd }      => commands::doc::run(cmd),
+        Commands::Asset { cmd } => commands::asset::run(cmd),
+        Commands::Sub { cmd } => commands::subscription::run(cmd),
+        Commands::Contact { cmd } => commands::contact::run(cmd),
+        Commands::Tx { cmd } => commands::tx::run(cmd),
+        Commands::Doc { cmd } => commands::doc::run(cmd),
         Commands::Schedule { cmd } => commands::schedule::run(cmd),
-        Commands::Task { cmd }     => commands::task::run(cmd),
-        Commands::Grant { cmd }    => commands::grant::run(cmd),
-        Commands::Setup            => commands::setup::run(),
-        Commands::Config { cmd }   => commands::config::run(cmd),
+        Commands::Task { cmd } => commands::task::run(cmd),
+        Commands::Grant { cmd } => commands::grant::run(cmd),
+        Commands::Setup => commands::setup::run(),
+        Commands::Config { cmd } => commands::config::run(cmd),
     }
 }

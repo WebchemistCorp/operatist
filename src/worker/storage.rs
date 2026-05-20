@@ -15,20 +15,39 @@ pub fn load_config() -> Result<SupabaseConfig> {
     let raw = std::fs::read_to_string(crate::paths::asurada_config()?)
         .context("config.toml 읽기 실패 — asurada init 필요")?;
     let doc: toml::Value = toml::from_str(&raw)?;
-    let sb = doc.get("supabase")
+    let sb = doc
+        .get("supabase")
         .context("[supabase] 섹션 없음 — config.toml 에 추가 필요")?;
-    let url = sb.get("url").and_then(|v| v.as_str())
-        .context("[supabase].url 없음")?.to_string();
-    let anon_key = sb.get("anon_key").and_then(|v| v.as_str())
-        .context("[supabase].anon_key 없음")?.to_string();
-    let bucket = sb.get("storage_bucket").and_then(|v| v.as_str())
-        .unwrap_or("workspace-docs").to_string();
-    Ok(SupabaseConfig { url, anon_key, bucket })
+    let url = sb
+        .get("url")
+        .and_then(|v| v.as_str())
+        .context("[supabase].url 없음")?
+        .to_string();
+    let anon_key = sb
+        .get("anon_key")
+        .and_then(|v| v.as_str())
+        .context("[supabase].anon_key 없음")?
+        .to_string();
+    let bucket = sb
+        .get("storage_bucket")
+        .and_then(|v| v.as_str())
+        .unwrap_or("workspace-docs")
+        .to_string();
+    Ok(SupabaseConfig {
+        url,
+        anon_key,
+        bucket,
+    })
 }
 
 /// 파일을 Supabase Storage에 업로드하고 public URL 반환.
 /// 경로: {bucket}/{user_id}/{doc_id}/{filename}
-pub fn upload(config: &SupabaseConfig, user_id: &str, doc_id: &str, file_path: &Path) -> Result<String> {
+pub fn upload(
+    config: &SupabaseConfig,
+    user_id: &str,
+    doc_id: &str,
+    file_path: &Path,
+) -> Result<String> {
     let filename = file_path
         .file_name()
         .and_then(|n| n.to_str())

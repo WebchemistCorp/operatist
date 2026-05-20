@@ -40,15 +40,33 @@ pub enum ContactCmd {
 
 pub fn run(cmd: ContactCmd) -> Result<()> {
     match cmd {
-        ContactCmd::Add { name, r#type, company, role, email, phone, notes } => {
+        ContactCmd::Add {
+            name,
+            r#type,
+            company,
+            role,
+            email,
+            phone,
+            notes,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
             let id = brain::contact_insert(
-                &conn, &user_id, &name, &r#type,
-                company.as_deref(), role.as_deref(),
-                email.as_deref(), phone.as_deref(), notes.as_deref(),
+                &conn,
+                &user_id,
+                &name,
+                &r#type,
+                company.as_deref(),
+                role.as_deref(),
+                email.as_deref(),
+                phone.as_deref(),
+                notes.as_deref(),
             )?;
-            println!("{} {}", style("✓").green(), style(format!("거래처 추가: {} ({})", name, id)).dim());
+            println!(
+                "{} {}",
+                style("✓").green(),
+                style(format!("거래처 추가: {} ({})", name, id)).dim()
+            );
             Ok(())
         }
         ContactCmd::List => {
@@ -59,7 +77,13 @@ pub fn run(cmd: ContactCmd) -> Result<()> {
                 println!("{}", style("등록된 거래처가 없습니다.").dim());
                 return Ok(());
             }
-            println!("{:<36}  {:<20}  {:<16}  {}", style("ID").bold(), style("이름").bold(), style("회사").bold(), style("연락처").bold());
+            println!(
+                "{:<36}  {:<20}  {:<16}  {}",
+                style("ID").bold(),
+                style("이름").bold(),
+                style("회사").bold(),
+                style("연락처").bold()
+            );
             println!("{}", "-".repeat(90));
             for c in contacts {
                 let company = c.company.unwrap_or_default();

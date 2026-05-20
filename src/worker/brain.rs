@@ -1,5 +1,6 @@
 // Workspace ↔ brain.db thin client.
 // Asurada 가 schema migration owner. Workspace 는 ws_* 테이블에만 읽기/쓰기.
+#![allow(dead_code, clippy::too_many_arguments)]
 
 use anyhow::{anyhow, Context, Result};
 use chrono::Utc;
@@ -19,10 +20,21 @@ pub fn open(path: &Path) -> Result<Connection> {
     conn.pragma_update(None, "busy_timeout", 5000)?;
     conn.pragma_update(None, "foreign_keys", "ON")?;
 
-    for table in &["ws_assets", "ws_contacts", "ws_transactions", "ws_documents", "ws_schedules", "ws_tasks", "ws_grants"] {
+    for table in &[
+        "ws_assets",
+        "ws_contacts",
+        "ws_transactions",
+        "ws_documents",
+        "ws_schedules",
+        "ws_tasks",
+        "ws_grants",
+    ] {
         let exists: i64 = conn
             .query_row(
-                &format!("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='{}'", table),
+                &format!(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='{}'",
+                    table
+                ),
                 [],
                 |r| r.get(0),
             )
@@ -83,8 +95,19 @@ pub fn asset_insert(
            (id, user_id, name, category, purchase_date, purchase_price, currency,
             vendor, serial_number, status, notes, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'active',?10,'{}',?11,?11)"#,
-        params![id, user_id, name, category, purchase_date, purchase_price, currency,
-                vendor, serial_number, notes, now],
+        params![
+            id,
+            user_id,
+            name,
+            category,
+            purchase_date,
+            purchase_price,
+            currency,
+            vendor,
+            serial_number,
+            notes,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -151,8 +174,19 @@ pub fn sub_insert(
            (id, user_id, name, category, billing_cycle, amount, currency,
             next_billing_date, started_at, status, notes, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'active',?10,'{}',?11,?11)"#,
-        params![id, user_id, name, category, billing_cycle, amount, currency,
-                next_billing_date, started_at, notes, now],
+        params![
+            id,
+            user_id,
+            name,
+            category,
+            billing_cycle,
+            amount,
+            currency,
+            next_billing_date,
+            started_at,
+            notes,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -216,7 +250,18 @@ pub fn contact_insert(
            (id, user_id, name, type, company, role, email, phone, notes,
             tags, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'[]','{}',?10,?10)"#,
-        params![id, user_id, name, contact_type, company, role, email, phone, notes, now],
+        params![
+            id,
+            user_id,
+            name,
+            contact_type,
+            company,
+            role,
+            email,
+            phone,
+            notes,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -229,9 +274,14 @@ pub fn contact_list(conn: &Connection, user_id: &str) -> Result<Vec<Contact>> {
     let rows = stmt
         .query_map(params![user_id], |row| {
             Ok(Contact {
-                id: row.get(0)?, name: row.get(1)?, r#type: row.get(2)?,
-                company: row.get(3)?, role: row.get(4)?,
-                email: row.get(5)?, phone: row.get(6)?, notes: row.get(7)?,
+                id: row.get(0)?,
+                name: row.get(1)?,
+                r#type: row.get(2)?,
+                company: row.get(3)?,
+                role: row.get(4)?,
+                email: row.get(5)?,
+                phone: row.get(6)?,
+                notes: row.get(7)?,
             })
         })?
         .filter_map(|r| r.ok())
@@ -280,8 +330,18 @@ pub fn tx_insert(
            (id, user_id, type, amount, currency, category, date, description,
             counterpart_name, tax_deductible, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,'KRW',?5,?6,?7,?8,?9,'{}',?10,?10)"#,
-        params![id, user_id, tx_type, amount, category, date,
-                description, counterpart_name, tax_deductible as i64, now],
+        params![
+            id,
+            user_id,
+            tx_type,
+            amount,
+            category,
+            date,
+            description,
+            counterpart_name,
+            tax_deductible as i64,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -294,10 +354,18 @@ pub fn tx_list(conn: &Connection, user_id: &str, limit: usize) -> Result<Vec<Tra
     let rows = stmt
         .query_map(params![user_id, limit as i64], |row| {
             Ok(Transaction {
-                id: row.get(0)?, r#type: row.get(1)?, amount: row.get(2)?,
-                currency: row.get(3)?, category: row.get(4)?,
-                description: row.get(5)?, counterpart_name: row.get(6)?,
-                date: row.get(7)?, tax_deductible: { let v: i64 = row.get(8)?; v != 0 },
+                id: row.get(0)?,
+                r#type: row.get(1)?,
+                amount: row.get(2)?,
+                currency: row.get(3)?,
+                category: row.get(4)?,
+                description: row.get(5)?,
+                counterpart_name: row.get(6)?,
+                date: row.get(7)?,
+                tax_deductible: {
+                    let v: i64 = row.get(8)?;
+                    v != 0
+                },
             })
         })?
         .filter_map(|r| r.ok())
@@ -348,7 +416,17 @@ pub fn doc_insert(
            (id, user_id, title, type, status, content, counterpart_name,
             expires_at, file_url, tags, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,'draft',?5,?6,?7,?8,'[]','{}',?9,?9)"#,
-        params![id, user_id, title, doc_type, content, counterpart_name, expires_at, file_url, now],
+        params![
+            id,
+            user_id,
+            title,
+            doc_type,
+            content,
+            counterpart_name,
+            expires_at,
+            file_url,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -362,9 +440,13 @@ pub fn doc_list(conn: &Connection, user_id: &str) -> Result<Vec<Document>> {
     let rows = stmt
         .query_map(params![user_id], |row| {
             Ok(Document {
-                id: row.get(0)?, title: row.get(1)?, r#type: row.get(2)?,
-                status: row.get(3)?, counterpart_name: row.get(4)?,
-                expires_at: row.get(5)?, updated_at: row.get(6)?,
+                id: row.get(0)?,
+                title: row.get(1)?,
+                r#type: row.get(2)?,
+                status: row.get(3)?,
+                counterpart_name: row.get(4)?,
+                expires_at: row.get(5)?,
+                updated_at: row.get(6)?,
             })
         })?
         .filter_map(|r| r.ok())
@@ -401,12 +483,25 @@ pub fn schedule_insert(
            (id, user_id, title, type, start_at, location, description,
             metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,'{}',?8,?8)"#,
-        params![id, user_id, title, sched_type, start_at, location, description, now],
+        params![
+            id,
+            user_id,
+            title,
+            sched_type,
+            start_at,
+            location,
+            description,
+            now
+        ],
     )?;
     Ok(id)
 }
 
-pub fn schedule_list(conn: &Connection, user_id: &str, upcoming_only: bool) -> Result<Vec<Schedule>> {
+pub fn schedule_list(
+    conn: &Connection,
+    user_id: &str,
+    upcoming_only: bool,
+) -> Result<Vec<Schedule>> {
     let sql = if upcoming_only {
         "SELECT id, title, type, start_at, location, description, status
          FROM ws_schedules WHERE user_id=?1 AND status='scheduled' AND start_at >= datetime('now')
@@ -420,9 +515,13 @@ pub fn schedule_list(conn: &Connection, user_id: &str, upcoming_only: bool) -> R
     let rows = stmt
         .query_map(params![user_id], |row| {
             Ok(Schedule {
-                id: row.get(0)?, title: row.get(1)?, r#type: row.get(2)?,
-                start_at: row.get(3)?, location: row.get(4)?,
-                description: row.get(5)?, status: row.get(6)?,
+                id: row.get(0)?,
+                title: row.get(1)?,
+                r#type: row.get(2)?,
+                start_at: row.get(3)?,
+                location: row.get(4)?,
+                description: row.get(5)?,
+                status: row.get(6)?,
             })
         })?
         .filter_map(|r| r.ok())
@@ -477,8 +576,12 @@ pub fn task_list(conn: &Connection, user_id: &str, done: bool) -> Result<Vec<Tas
     let rows = stmt
         .query_map(params![user_id], |row| {
             Ok(Task {
-                id: row.get(0)?, title: row.get(1)?, status: row.get(2)?,
-                priority: row.get(3)?, due_at: row.get(4)?, description: row.get(5)?,
+                id: row.get(0)?,
+                title: row.get(1)?,
+                status: row.get(2)?,
+                priority: row.get(3)?,
+                due_at: row.get(4)?,
+                description: row.get(5)?,
             })
         })?
         .filter_map(|r| r.ok())
@@ -529,7 +632,18 @@ pub fn grant_insert(
            (id, user_id, name, agency, category, amount, currency, status,
             deadline_at, url, notes, requirements, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,'KRW','discovered',?7,?8,?9,'[]','{}',?10,?10)"#,
-        params![id, user_id, name, agency, category, amount, deadline_at, url, notes, now],
+        params![
+            id,
+            user_id,
+            name,
+            agency,
+            category,
+            amount,
+            deadline_at,
+            url,
+            notes,
+            now
+        ],
     )?;
     Ok(id)
 }
@@ -563,7 +677,12 @@ pub fn grant_list(conn: &Connection, user_id: &str, status: Option<&str>) -> Res
     Ok(rows)
 }
 
-pub fn grant_update_status(conn: &Connection, id: &str, user_id: &str, status: &str) -> Result<bool> {
+pub fn grant_update_status(
+    conn: &Connection,
+    id: &str,
+    user_id: &str,
+    status: &str,
+) -> Result<bool> {
     let now = Utc::now().to_rfc3339();
     let n = conn.execute(
         "UPDATE ws_grants SET status=?1, updated_at=?2 WHERE id=?3 AND user_id=?4",
@@ -574,8 +693,15 @@ pub fn grant_update_status(conn: &Connection, id: &str, user_id: &str, status: &
 
 fn row_to_grant(row: &rusqlite::Row<'_>) -> rusqlite::Result<Grant> {
     Ok(Grant {
-        id: row.get(0)?, name: row.get(1)?, agency: row.get(2)?,
-        amount: row.get(3)?, currency: row.get(4)?, category: row.get(5)?,
-        status: row.get(6)?, deadline_at: row.get(7)?, url: row.get(8)?, notes: row.get(9)?,
+        id: row.get(0)?,
+        name: row.get(1)?,
+        agency: row.get(2)?,
+        amount: row.get(3)?,
+        currency: row.get(4)?,
+        category: row.get(5)?,
+        status: row.get(6)?,
+        deadline_at: row.get(7)?,
+        url: row.get(8)?,
+        notes: row.get(9)?,
     })
 }

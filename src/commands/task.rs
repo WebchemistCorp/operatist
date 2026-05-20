@@ -35,14 +35,29 @@ pub enum TaskCmd {
 
 pub fn run(cmd: TaskCmd) -> Result<()> {
     match cmd {
-        TaskCmd::Add { title, priority, due, description } => {
+        TaskCmd::Add {
+            title,
+            priority,
+            due,
+            description,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
             let id = brain::task_insert(
-                &conn, &user_id, &title, &priority,
-                due.as_deref(), description.as_deref(),
+                &conn,
+                &user_id,
+                &title,
+                &priority,
+                due.as_deref(),
+                description.as_deref(),
             )?;
-            println!("{} [{}] {} ({})", style("✓").green(), priority_label(&priority), style(&title).bold(), style(&id).dim());
+            println!(
+                "{} [{}] {} ({})",
+                style("✓").green(),
+                priority_label(&priority),
+                style(&title).bold(),
+                style(&id).dim()
+            );
             Ok(())
         }
         TaskCmd::List { done } => {
@@ -50,14 +65,24 @@ pub fn run(cmd: TaskCmd) -> Result<()> {
             let user_id = crate::paths::load_user_id()?;
             let tasks = brain::task_list(&conn, &user_id, done)?;
             if tasks.is_empty() {
-                let msg = if done { "완료된 태스크가 없습니다." } else { "진행 중인 태스크가 없습니다." };
+                let msg = if done {
+                    "완료된 태스크가 없습니다."
+                } else {
+                    "진행 중인 태스크가 없습니다."
+                };
                 println!("{}", style(msg).dim());
                 return Ok(());
             }
             for t in tasks {
                 let pri = priority_label(&t.priority);
                 let due = t.due_at.map(|d| format!(" ~ {}", d)).unwrap_or_default();
-                println!("{} {} {}{}", pri, t.title, style(&t.id).dim(), style(&due).yellow());
+                println!(
+                    "{} {} {}{}",
+                    pri,
+                    t.title,
+                    style(&t.id).dim(),
+                    style(&due).yellow()
+                );
             }
             Ok(())
         }
@@ -77,8 +102,8 @@ pub fn run(cmd: TaskCmd) -> Result<()> {
 fn priority_label(priority: &str) -> console::StyledObject<&str> {
     match priority {
         "urgent" => style("🔴").for_stderr(),
-        "high"   => style("🟠").for_stderr(),
+        "high" => style("🟠").for_stderr(),
         "normal" => style("🟡").for_stderr(),
-        _        => style("⚪").for_stderr(),
+        _ => style("⚪").for_stderr(),
     }
 }

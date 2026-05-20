@@ -61,23 +61,65 @@ pub enum TxCmd {
 pub fn run(cmd: TxCmd) -> Result<()> {
     let today = Local::now().format("%Y-%m-%d").to_string();
     match cmd {
-        TxCmd::Income { amount, category, date, description, from } => {
+        TxCmd::Income {
+            amount,
+            category,
+            date,
+            description,
+            from,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
             let date = date.unwrap_or_else(|| today.clone());
-            brain::tx_insert(&conn, &user_id, "income", amount, &category, &date,
-                description.as_deref(), from.as_deref(), false)?;
-            println!("{} {} {}원 수입 기록", style("✓").green(), style(&date).dim(), style(format_amount(amount)).cyan());
+            brain::tx_insert(
+                &conn,
+                &user_id,
+                "income",
+                amount,
+                &category,
+                &date,
+                description.as_deref(),
+                from.as_deref(),
+                false,
+            )?;
+            println!(
+                "{} {} {}원 수입 기록",
+                style("✓").green(),
+                style(&date).dim(),
+                style(format_amount(amount)).cyan()
+            );
             Ok(())
         }
-        TxCmd::Expense { amount, category, date, description, to, tax } => {
+        TxCmd::Expense {
+            amount,
+            category,
+            date,
+            description,
+            to,
+            tax,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
             let date = date.unwrap_or_else(|| today.clone());
-            brain::tx_insert(&conn, &user_id, "expense", amount, &category, &date,
-                description.as_deref(), to.as_deref(), tax)?;
+            brain::tx_insert(
+                &conn,
+                &user_id,
+                "expense",
+                amount,
+                &category,
+                &date,
+                description.as_deref(),
+                to.as_deref(),
+                tax,
+            )?;
             let tax_mark = if tax { " (공제)" } else { "" };
-            println!("{} {} {}원 지출 기록{}", style("✓").green(), style(&date).dim(), style(format_amount(amount)).yellow(), style(tax_mark).dim());
+            println!(
+                "{} {} {}원 지출 기록{}",
+                style("✓").green(),
+                style(&date).dim(),
+                style(format_amount(amount)).yellow(),
+                style(tax_mark).dim()
+            );
             Ok(())
         }
         TxCmd::List { limit } => {
@@ -88,13 +130,27 @@ pub fn run(cmd: TxCmd) -> Result<()> {
                 println!("{}", style("거래 내역이 없습니다.").dim());
                 return Ok(());
             }
-            println!("{:<12}  {:<8}  {:>14}  {:<12}  {}", style("날짜").bold(), style("구분").bold(), style("금액").bold(), style("카테고리").bold(), style("메모").bold());
+            println!(
+                "{:<12}  {:<8}  {:>14}  {:<12}  {}",
+                style("날짜").bold(),
+                style("구분").bold(),
+                style("금액").bold(),
+                style("카테고리").bold(),
+                style("메모").bold()
+            );
             println!("{}", "-".repeat(70));
             for t in txs {
-                let type_str = if t.r#type == "income" { style("수입").cyan() } else { style("지출").yellow() };
+                let type_str = if t.r#type == "income" {
+                    style("수입").cyan()
+                } else {
+                    style("지출").yellow()
+                };
                 let amount_str = format_amount(t.amount);
                 let desc = t.description.or(t.counterpart_name).unwrap_or_default();
-                println!("{:<12}  {:<8}  {:>14}  {:<12}  {}", t.date, type_str, amount_str, t.category, desc);
+                println!(
+                    "{:<12}  {:<8}  {:>14}  {:<12}  {}",
+                    t.date, type_str, amount_str, t.category, desc
+                );
             }
             Ok(())
         }
@@ -107,7 +163,14 @@ pub fn run(cmd: TxCmd) -> Result<()> {
             println!("── {} 요약 ──────────────────", style(&month).bold());
             println!("  수입:   {}", style(format_amount(income)).cyan());
             println!("  지출:   {}", style(format_amount(expense)).yellow());
-            println!("  순이익: {}", if net >= 0.0 { style(format_amount(net)).green() } else { style(format_amount(net)).red() });
+            println!(
+                "  순이익: {}",
+                if net >= 0.0 {
+                    style(format_amount(net)).green()
+                } else {
+                    style(format_amount(net)).red()
+                }
+            );
             Ok(())
         }
     }
@@ -118,7 +181,9 @@ fn format_amount(amount: f64) -> String {
     let s = n.to_string();
     let mut result = String::new();
     for (i, c) in s.chars().rev().enumerate() {
-        if i > 0 && i % 3 == 0 { result.push(','); }
+        if i > 0 && i % 3 == 0 {
+            result.push(',');
+        }
         result.push(c);
     }
     format!("{}원", result.chars().rev().collect::<String>())

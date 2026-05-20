@@ -34,7 +34,14 @@ pub enum DocCmd {
 
 pub fn run(cmd: DocCmd) -> Result<()> {
     match cmd {
-        DocCmd::Add { title, r#type, with, expires, content, file } => {
+        DocCmd::Add {
+            title,
+            r#type,
+            with,
+            expires,
+            content,
+            file,
+        } => {
             let conn = brain::open(&crate::paths::brain_db()?)?;
             let user_id = crate::paths::load_user_id()?;
 
@@ -49,11 +56,21 @@ pub fn run(cmd: DocCmd) -> Result<()> {
             };
 
             let id = brain::doc_insert(
-                &conn, &user_id, &title, &r#type,
-                content.as_deref(), with.as_deref(), expires.as_deref(),
+                &conn,
+                &user_id,
+                &title,
+                &r#type,
+                content.as_deref(),
+                with.as_deref(),
+                expires.as_deref(),
                 file_url.as_deref(),
             )?;
-            println!("{} {} ({})", style("✓").green(), style(&title).bold(), style(&id).dim());
+            println!(
+                "{} {} ({})",
+                style("✓").green(),
+                style(&title).bold(),
+                style(&id).dim()
+            );
             Ok(())
         }
         DocCmd::List => {
@@ -64,9 +81,14 @@ pub fn run(cmd: DocCmd) -> Result<()> {
                 println!("{}", style("등록된 문서가 없습니다.").dim());
                 return Ok(());
             }
-            println!("{:<36}  {:<12}  {:<8}  {:<20}  {}",
-                style("ID").bold(), style("타입").bold(), style("상태").bold(),
-                style("거래처").bold(), style("제목").bold());
+            println!(
+                "{:<36}  {:<12}  {:<8}  {:<20}  {}",
+                style("ID").bold(),
+                style("타입").bold(),
+                style("상태").bold(),
+                style("거래처").bold(),
+                style("제목").bold()
+            );
             println!("{}", "-".repeat(90));
             for d in docs {
                 let counterpart = d.counterpart_name.unwrap_or_default();
@@ -75,7 +97,10 @@ pub fn run(cmd: DocCmd) -> Result<()> {
                     "draft" => style(d.status.clone()).yellow(),
                     _ => style(d.status.clone()).dim(),
                 };
-                println!("{:<36}  {:<12}  {:<8}  {:<20}  {}", d.id, d.r#type, status_styled, counterpart, d.title);
+                println!(
+                    "{:<36}  {:<12}  {:<8}  {:<20}  {}",
+                    d.id, d.r#type, status_styled, counterpart, d.title
+                );
             }
             Ok(())
         }
