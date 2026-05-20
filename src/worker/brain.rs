@@ -1,5 +1,5 @@
-// Workspace ↔ brain.db thin client.
-// Asurada 가 schema migration owner. Workspace 는 ws_* 테이블에만 읽기/쓰기.
+// Operatist ↔ brain.db thin client.
+// Asurada 가 schema migration owner. Operatist 는 op_* 테이블에만 읽기/쓰기.
 #![allow(dead_code, clippy::too_many_arguments)]
 
 use anyhow::{anyhow, Context, Result};
@@ -21,13 +21,13 @@ pub fn open(path: &Path) -> Result<Connection> {
     conn.pragma_update(None, "foreign_keys", "ON")?;
 
     for table in &[
-        "ws_assets",
-        "ws_contacts",
-        "ws_transactions",
-        "ws_documents",
-        "ws_schedules",
-        "ws_tasks",
-        "ws_grants",
+        "op_assets",
+        "op_contacts",
+        "op_transactions",
+        "op_documents",
+        "op_schedules",
+        "op_tasks",
+        "op_grants",
     ] {
         let exists: i64 = conn
             .query_row(
@@ -91,7 +91,7 @@ pub fn asset_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_assets
+        r#"INSERT INTO op_assets
            (id, user_id, name, category, purchase_date, purchase_price, currency,
             vendor, serial_number, status, notes, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'active',?10,'{}',?11,?11)"#,
@@ -116,7 +116,7 @@ pub fn asset_list(conn: &Connection, user_id: &str) -> Result<Vec<Asset>> {
     let mut stmt = conn.prepare(
         r#"SELECT id, name, category, purchase_date, purchase_price, currency,
                   vendor, serial_number, status, notes
-           FROM ws_assets WHERE user_id = ?1 AND status != 'disposed'
+           FROM op_assets WHERE user_id = ?1 AND status != 'disposed'
            ORDER BY created_at DESC"#,
     )?;
     let rows = stmt
@@ -170,7 +170,7 @@ pub fn sub_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_subscriptions
+        r#"INSERT INTO op_subscriptions
            (id, user_id, name, category, billing_cycle, amount, currency,
             next_billing_date, started_at, status, notes, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'active',?10,'{}',?11,?11)"#,
@@ -195,7 +195,7 @@ pub fn sub_list(conn: &Connection, user_id: &str) -> Result<Vec<Subscription>> {
     let mut stmt = conn.prepare(
         r#"SELECT id, name, category, billing_cycle, amount, currency,
                   next_billing_date, started_at, status, notes
-           FROM ws_subscriptions WHERE user_id = ?1 AND status = 'active'
+           FROM op_subscriptions WHERE user_id = ?1 AND status = 'active'
            ORDER BY next_billing_date ASC NULLS LAST"#,
     )?;
     let rows = stmt
@@ -246,7 +246,7 @@ pub fn contact_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_contacts
+        r#"INSERT INTO op_contacts
            (id, user_id, name, type, company, role, email, phone, notes,
             tags, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,'[]','{}',?10,?10)"#,
@@ -269,7 +269,7 @@ pub fn contact_insert(
 pub fn contact_list(conn: &Connection, user_id: &str) -> Result<Vec<Contact>> {
     let mut stmt = conn.prepare(
         "SELECT id, name, type, company, role, email, phone, notes
-         FROM ws_contacts WHERE user_id=?1 ORDER BY name ASC",
+         FROM op_contacts WHERE user_id=?1 ORDER BY name ASC",
     )?;
     let rows = stmt
         .query_map(params![user_id], |row| {
@@ -291,7 +291,7 @@ pub fn contact_list(conn: &Connection, user_id: &str) -> Result<Vec<Contact>> {
 
 pub fn contact_delete(conn: &Connection, id: &str, user_id: &str) -> Result<bool> {
     let n = conn.execute(
-        "DELETE FROM ws_contacts WHERE id=?1 AND user_id=?2",
+        "DELETE FROM op_contacts WHERE id=?1 AND user_id=?2",
         params![id, user_id],
     )?;
     Ok(n > 0)
@@ -326,7 +326,7 @@ pub fn tx_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_transactions
+        r#"INSERT INTO op_transactions
            (id, user_id, type, amount, currency, category, date, description,
             counterpart_name, tax_deductible, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,'KRW',?5,?6,?7,?8,?9,'{}',?10,?10)"#,
@@ -349,7 +349,7 @@ pub fn tx_insert(
 pub fn tx_list(conn: &Connection, user_id: &str, limit: usize) -> Result<Vec<Transaction>> {
     let mut stmt = conn.prepare(
         "SELECT id, type, amount, currency, category, description, counterpart_name, date, tax_deductible
-         FROM ws_transactions WHERE user_id=?1 ORDER BY date DESC, created_at DESC LIMIT ?2",
+         FROM op_transactions WHERE user_id=?1 ORDER BY date DESC, created_at DESC LIMIT ?2",
     )?;
     let rows = stmt
         .query_map(params![user_id, limit as i64], |row| {
@@ -376,11 +376,11 @@ pub fn tx_list(conn: &Connection, user_id: &str, limit: usize) -> Result<Vec<Tra
 pub fn tx_summary(conn: &Connection, user_id: &str, month: &str) -> Result<(f64, f64)> {
     let prefix = format!("{}%", month);
     let income: f64 = conn.query_row(
-        "SELECT COALESCE(SUM(amount),0) FROM ws_transactions WHERE user_id=?1 AND type='income' AND date LIKE ?2",
+        "SELECT COALESCE(SUM(amount),0) FROM op_transactions WHERE user_id=?1 AND type='income' AND date LIKE ?2",
         params![user_id, prefix], |r| r.get(0),
     ).unwrap_or(0.0);
     let expense: f64 = conn.query_row(
-        "SELECT COALESCE(SUM(amount),0) FROM ws_transactions WHERE user_id=?1 AND type='expense' AND date LIKE ?2",
+        "SELECT COALESCE(SUM(amount),0) FROM op_transactions WHERE user_id=?1 AND type='expense' AND date LIKE ?2",
         params![user_id, prefix], |r| r.get(0),
     ).unwrap_or(0.0);
     Ok((income, expense))
@@ -412,7 +412,7 @@ pub fn doc_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_documents
+        r#"INSERT INTO op_documents
            (id, user_id, title, type, status, content, counterpart_name,
             expires_at, file_url, tags, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,'draft',?5,?6,?7,?8,'[]','{}',?9,?9)"#,
@@ -434,7 +434,7 @@ pub fn doc_insert(
 pub fn doc_list(conn: &Connection, user_id: &str) -> Result<Vec<Document>> {
     let mut stmt = conn.prepare(
         "SELECT id, title, type, status, counterpart_name, expires_at, updated_at
-         FROM ws_documents WHERE user_id=?1 AND status!='archived'
+         FROM op_documents WHERE user_id=?1 AND status!='archived'
          ORDER BY updated_at DESC",
     )?;
     let rows = stmt
@@ -479,7 +479,7 @@ pub fn schedule_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_schedules
+        r#"INSERT INTO op_schedules
            (id, user_id, title, type, start_at, location, description,
             metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,?7,'{}',?8,?8)"#,
@@ -504,11 +504,11 @@ pub fn schedule_list(
 ) -> Result<Vec<Schedule>> {
     let sql = if upcoming_only {
         "SELECT id, title, type, start_at, location, description, status
-         FROM ws_schedules WHERE user_id=?1 AND status='scheduled' AND start_at >= datetime('now')
+         FROM op_schedules WHERE user_id=?1 AND status='scheduled' AND start_at >= datetime('now')
          ORDER BY start_at ASC LIMIT 20"
     } else {
         "SELECT id, title, type, start_at, location, description, status
-         FROM ws_schedules WHERE user_id=?1
+         FROM op_schedules WHERE user_id=?1
          ORDER BY start_at DESC LIMIT 30"
     };
     let mut stmt = conn.prepare(sql)?;
@@ -552,7 +552,7 @@ pub fn task_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_tasks
+        r#"INSERT INTO op_tasks
            (id, user_id, title, status, priority, due_at, description,
             tags, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,'todo',?4,?5,?6,'[]','{}',?7,?7)"#,
@@ -564,11 +564,11 @@ pub fn task_insert(
 pub fn task_list(conn: &Connection, user_id: &str, done: bool) -> Result<Vec<Task>> {
     let sql = if done {
         "SELECT id, title, status, priority, due_at, description
-         FROM ws_tasks WHERE user_id=?1 AND status='done'
+         FROM op_tasks WHERE user_id=?1 AND status='done'
          ORDER BY done_at DESC LIMIT 20"
     } else {
         "SELECT id, title, status, priority, due_at, description
-         FROM ws_tasks WHERE user_id=?1 AND status IN ('todo','in_progress')
+         FROM op_tasks WHERE user_id=?1 AND status IN ('todo','in_progress')
          ORDER BY CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END,
                   due_at ASC NULLS LAST"
     };
@@ -592,7 +592,7 @@ pub fn task_list(conn: &Connection, user_id: &str, done: bool) -> Result<Vec<Tas
 pub fn task_done(conn: &Connection, id: &str, user_id: &str) -> Result<bool> {
     let now = Utc::now().to_rfc3339();
     let n = conn.execute(
-        "UPDATE ws_tasks SET status='done', done_at=?1, updated_at=?1 WHERE id=?2 AND user_id=?3",
+        "UPDATE op_tasks SET status='done', done_at=?1, updated_at=?1 WHERE id=?2 AND user_id=?3",
         params![now, id, user_id],
     )?;
     Ok(n > 0)
@@ -628,7 +628,7 @@ pub fn grant_insert(
     let id = uuid_like();
     let now = Utc::now().to_rfc3339();
     conn.execute(
-        r#"INSERT INTO ws_grants
+        r#"INSERT INTO op_grants
            (id, user_id, name, agency, category, amount, currency, status,
             deadline_at, url, notes, requirements, metadata, created_at, updated_at)
            VALUES (?1,?2,?3,?4,?5,?6,'KRW','discovered',?7,?8,?9,'[]','{}',?10,?10)"#,
@@ -652,14 +652,14 @@ pub fn grant_list(conn: &Connection, user_id: &str, status: Option<&str>) -> Res
     let (sql, bind_status) = if let Some(s) = status {
         (
             "SELECT id, name, agency, amount, currency, category, status, deadline_at, url, notes
-             FROM ws_grants WHERE user_id=?1 AND status=?2
+             FROM op_grants WHERE user_id=?1 AND status=?2
              ORDER BY deadline_at ASC NULLS LAST",
             Some(s.to_string()),
         )
     } else {
         (
             "SELECT id, name, agency, amount, currency, category, status, deadline_at, url, notes
-             FROM ws_grants WHERE user_id=?1 AND status NOT IN ('rejected','cancelled')
+             FROM op_grants WHERE user_id=?1 AND status NOT IN ('rejected','cancelled')
              ORDER BY deadline_at ASC NULLS LAST",
             None,
         )
@@ -685,7 +685,7 @@ pub fn grant_update_status(
 ) -> Result<bool> {
     let now = Utc::now().to_rfc3339();
     let n = conn.execute(
-        "UPDATE ws_grants SET status=?1, updated_at=?2 WHERE id=?3 AND user_id=?4",
+        "UPDATE op_grants SET status=?1, updated_at=?2 WHERE id=?3 AND user_id=?4",
         params![status, now, id, user_id],
     )?;
     Ok(n > 0)

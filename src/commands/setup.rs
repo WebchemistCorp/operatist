@@ -41,13 +41,13 @@ pub fn run() -> Result<()> {
         bail!("마이그레이션 실패:\n{}", stderr);
     }
 
-    println!("{} ws_contacts, ws_transactions, ws_documents, ws_schedules, ws_tasks, ws_grants 테이블 적용 완료", style("✓").green());
+    println!("{} op_contacts, op_transactions, op_documents, op_schedules, op_tasks, op_grants 테이블 적용 완료", style("✓").green());
 
     // Storage 버킷 생성 시도
     create_storage_bucket()?;
 
     println!(
-        "{} workspace setup 완료 — `workspace doc add` 등 커맨드를 사용할 수 있습니다.",
+        "{} operatist setup 완료 — `operatist doc add` 등 커맨드를 사용할 수 있습니다.",
         style("✓").green().bold()
     );
     Ok(())
@@ -68,7 +68,7 @@ fn resolve_database_url() -> Result<String> {
              \n\
              Supabase 대시보드 → Project Settings → Database → Connection string (URI) 복사 후:\n\
              \n\
-             workspace config set database-url \"postgresql://postgres.[ref]:[pw]@...\""
+             operatist config set database-url \"postgresql://postgres.[ref]:[pw]@...\""
             )
         })
 }
@@ -100,7 +100,7 @@ fn create_storage_bucket() -> Result<()> {
     let bucket = sb
         .get("storage_bucket")
         .and_then(|v| v.as_str())
-        .unwrap_or("workspace-docs")
+        .unwrap_or("operatist-docs")
         .to_string();
 
     let body = format!(r#"{{"id":"{bucket}","name":"{bucket}","public":false}}"#);

@@ -46,7 +46,7 @@ export const Hero: React.FC = () => (
         <p className="reveal text-slate-400 text-lg md:text-xl max-w-2xl leading-relaxed" style={{ animationDelay: '200ms', wordBreak: 'keep-all' }}>
           자금관리, 문서 작업, 법무 검토, 일정 조율, 지원사업 신청까지.
           <br />
-          Workspace가 사업 전반을 대신 처리하니, 당신은 본업에만 집중하세요.
+          Operatist가 사업 전반을 대신 처리하니, 당신은 본업에만 집중하세요.
         </p>
 
         <div className="reveal flex items-center gap-3 flex-wrap justify-center" style={{ animationDelay: '250ms' }}>
@@ -72,9 +72,9 @@ export const Hero: React.FC = () => (
                 <span className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
               </div>
               <p className="text-slate-600">나 &gt; <span className="text-slate-300">이번 달 매출 정리해서 세무사한테 보낼 자료 만들어줘</span></p>
-              <p className="mt-1" style={{ color: ACCENT }}>Workspace &gt; 5월 거래 내역 집계 완료. PDF 보고서 생성 중...</p>
+              <p className="mt-1" style={{ color: ACCENT }}>Operatist &gt; 5월 거래 내역 집계 완료. PDF 보고서 생성 중...</p>
               <p className="text-slate-600 mt-2">나 &gt; <span className="text-slate-300">소기업 지원사업 신청서도 작성해줘</span></p>
-              <p className="mt-1" style={{ color: '#60a5fa' }}>Workspace &gt; 중소벤처기업부 2026년 소기업 성장지원 사업에 적합합니다. 신청서 초안을 작성했습니다.</p>
+              <p className="mt-1" style={{ color: '#60a5fa' }}>Operatist &gt; 중소벤처기업부 2026년 소기업 성장지원 사업에 적합합니다. 신청서 초안을 작성했습니다.</p>
             </div>
           </div>
         </div>

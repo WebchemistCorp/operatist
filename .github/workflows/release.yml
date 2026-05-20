@@ -62,17 +62,17 @@ jobs:
         shell: bash
         run: |
           cd target/${{ matrix.target }}/release
-          tar czf ../../../workspace-${{ matrix.target }}.tar.gz workspace
+          tar czf ../../../operatist-${{ matrix.target }}.tar.gz operatist
           cd ../../..
-          shasum -a 256 workspace-${{ matrix.target }}.tar.gz > workspace-${{ matrix.target }}.tar.gz.sha256
+          shasum -a 256 operatist-${{ matrix.target }}.tar.gz > operatist-${{ matrix.target }}.tar.gz.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: workspace-${{ matrix.target }}
+          name: operatist-${{ matrix.target }}
           path: |
-            workspace-${{ matrix.target }}.tar.gz
-            workspace-${{ matrix.target }}.tar.gz.sha256
+            operatist-${{ matrix.target }}.tar.gz
+            operatist-${{ matrix.target }}.tar.gz.sha256
 
   release:
     name: Create GitHub Release
@@ -198,7 +198,7 @@ jobs:
 
           for triple in x86_64-apple-darwin aarch64-apple-darwin \
                         x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
-            NAME="workspace-${triple}.tar.gz.sha256"
+            NAME="operatist-${triple}.tar.gz.sha256"
             ASSET_ID=$(echo "$ASSETS" | jq -r --arg N "$NAME" \
               '.[] | select(.name == $N) | .id')
             if [ -z "$ASSET_ID" ] || [ "$ASSET_ID" = "null" ]; then
@@ -224,10 +224,10 @@ jobs:
           SHA_LIN_ARM=$(awk '{print $1}' sums/aarch64-unknown-linux-gnu.sha256)
 
           mkdir -p tap/Formula
-          cat > tap/Formula/workspace.rb <<EOF
-          class Workspace < Formula
+          cat > tap/Formula/operatist.rb <<EOF
+          class Operatist < Formula
             desc "Business operations CLI for 개인/법인 사업자 — powered by Asurada"
-            homepage "https://github.com/WebchemistCorp/workspace"
+            homepage "https://github.com/WebchemistCorp/operatist"
             version "${VERSION}"
             license "MIT"
 
@@ -235,44 +235,44 @@ jobs:
 
             on_macos do
               if Hardware::CPU.arm?
-                url "${BASE}/workspace-aarch64-apple-darwin.tar.gz"
+                url "${BASE}/operatist-aarch64-apple-darwin.tar.gz"
                 sha256 "${SHA_MAC_ARM}"
               else
-                url "${BASE}/workspace-x86_64-apple-darwin.tar.gz"
+                url "${BASE}/operatist-x86_64-apple-darwin.tar.gz"
                 sha256 "${SHA_MAC_X86}"
               end
             end
 
             on_linux do
               if Hardware::CPU.arm?
-                url "${BASE}/workspace-aarch64-unknown-linux-gnu.tar.gz"
+                url "${BASE}/operatist-aarch64-unknown-linux-gnu.tar.gz"
                 sha256 "${SHA_LIN_ARM}"
               else
-                url "${BASE}/workspace-x86_64-unknown-linux-gnu.tar.gz"
+                url "${BASE}/operatist-x86_64-unknown-linux-gnu.tar.gz"
                 sha256 "${SHA_LIN_X86}"
               end
             end
 
             def install
-              bin.install "workspace"
+              bin.install "operatist"
             end
 
             def caveats
               <<~EOS
-                Workspace binaries are not yet code-signed with an Apple
+                Operatist binaries are not yet code-signed with an Apple
                 Developer ID. On first launch macOS Gatekeeper may show
                 an "unidentified developer" warning. To allow it:
 
-                  xattr -d com.apple.quarantine "$(which workspace)"
+                  xattr -d com.apple.quarantine "$(which operatist)"
 
                 Quick start:
-                  workspace config set database-url "postgresql://..."
-                  workspace setup
+                  operatist config set database-url "postgresql://..."
+                  operatist setup
               EOS
             end
 
             test do
-              assert_match "workspace", shell_output("#{bin}/workspace --version")
+              assert_match "operatist", shell_output("#{bin}/operatist --version")
             end
           end
           EOF
@@ -282,6 +282,6 @@ jobs:
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/workspace.rb
-          git commit -m "workspace ${{ needs.release.outputs.version }}" || exit 0
+          git add Formula/operatist.rb
+          git commit -m "operatist ${{ needs.release.outputs.version }}" || exit 0
           git push
