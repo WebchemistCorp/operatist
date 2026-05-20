@@ -306,3 +306,18 @@ jobs:
           git add Formula/operatist.rb
           git commit -m "operatist ${{ needs.release.outputs.version }}" || exit 0
           git push
+
+  update-portfolio:
+    name: Update portfolio version
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Patch Supabase portfolio_projects
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          curl -s -X PATCH \
+            "https://zxacniwlhafjwxbnjlmm.supabase.co/rest/v1/portfolio_projects?name=eq.Operatist" \
+            -H "apikey: ${{ secrets.PORTFOLIO_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.PORTFOLIO_SERVICE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"version\": \"$VERSION\", \"status\": \"출시\"}"
