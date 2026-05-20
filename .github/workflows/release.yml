@@ -4,12 +4,6 @@ on:
   push:
     tags:
       - "v*.*.*"
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to release (e.g. v0.1.0)"
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -98,11 +92,7 @@ jobs:
       - name: Determine tag
         id: tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ inputs.tag }}"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-          fi
+          TAG="${GITHUB_REF#refs/tags/}"
           VERSION="${TAG#v}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -135,17 +125,18 @@ jobs:
             exit 1
           fi
 
-      - name: Check if version already published
+      - name: Check if version should be published
         run: |
           VERSION="${{ needs.release.outputs.version }}"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://crates.io/api/v1/crates/operatist/${VERSION}" \
-            -H "User-Agent: operatist-release-ci")
-          if [ "$STATUS" = "200" ]; then
-            echo "::notice::operatist v${VERSION} already exists on crates.io. Skipping publish."
-            echo "SKIP_PUBLISH=true" >> $GITHUB_ENV
-          else
+          LATEST=$(curl -s "https://crates.io/api/v1/crates/operatist" \
+            -H "User-Agent: operatist-release-ci" | jq -r '.crate.max_version // "0.0.0"')
+          HIGHER=$(printf '%s\n' "$LATEST" "$VERSION" | sort -V | tail -1)
+          if [ "$HIGHER" = "$VERSION" ] && [ "$LATEST" != "$VERSION" ]; then
+            echo "Publishing operatist v${VERSION} (crates.io latest: v${LATEST})"
             echo "SKIP_PUBLISH=false" >> $GITHUB_ENV
+          else
+            echo "::notice::operatist v${VERSION} is not newer than crates.io v${LATEST}. Skipping."
+            echo "SKIP_PUBLISH=true" >> $GITHUB_ENV
           fi
 
       - name: cargo publish
@@ -178,10 +169,26 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: tap
 
+      - name: Check if version should be updated
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          CURRENT=$(grep 'version "' tap/Formula/operatist.rb 2>/dev/null \
+            | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "0.0.0")
+          HIGHER=$(printf '%s\n' "$CURRENT" "$VERSION" | sort -V | tail -1)
+          if [ "$HIGHER" = "$VERSION" ] && [ "$CURRENT" != "$VERSION" ]; then
+            echo "Updating tap operatist v${VERSION} (current: v${CURRENT})"
+            echo "SKIP_BREW=false" >> $GITHUB_ENV
+          else
+            echo "::notice::operatist v${VERSION} is not newer than tap v${CURRENT}. Skipping."
+            echo "SKIP_BREW=true" >> $GITHUB_ENV
+          fi
+
       - name: Wait for release assets to settle
+        if: env.SKIP_BREW == 'false'
         run: sleep 15
 
       - name: Download SHA files via GitHub API
+        if: env.SKIP_BREW == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release.outputs.tag }}
@@ -225,6 +232,7 @@ jobs:
           done
 
       - name: Render Formula
+        if: env.SKIP_BREW == 'false'
         run: |
           VERSION="${{ needs.release.outputs.version }}"
           TAG="${{ needs.release.outputs.tag }}"
@@ -290,6 +298,7 @@ jobs:
           EOF
 
       - name: Commit & push
+        if: env.SKIP_BREW == 'false'
         run: |
           cd tap
           git config user.name "github-actions[bot]"
